@@ -1,0 +1,2 @@
+# rm_classifier_training
+RoboMaster 装甲板图案分类器训练相关代码
