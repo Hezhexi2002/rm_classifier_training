@@ -24,21 +24,36 @@ class MLP(nn.Module):
         return self.layers(x)
 
 
+def save_model(model):
+    # Save as onnx
+    dummy_input = torch.randn(1, 20, 28, 1)
+    torch.onnx.export(model, dummy_input, "mlp.onnx")
+
+    # Check onnx
+    onnx_model = onnx.load("mlp.onnx")
+    onnx.checker.check_model(onnx_model)
+    print(onnx.helper.printable_graph(onnx_model.graph))
+
+
 # Init model
 model = MLP()
-print(model)
+print(model, "\n")
 
 # Load data from folder
 dataset = torchvision.datasets.ImageFolder(
     root=os.path.join(os.path.dirname(__file__), 'datasets'),
     transform=torchvision.transforms.Compose([
         torchvision.transforms.Grayscale(),
-        torchvision.transforms.ToTensor()
+        torchvision.transforms.RandomAffine(
+            degrees=(-5, 5), translate=(0.08, 0.08), scale=(0.9, 1.1)),
+        torchvision.transforms.ToTensor(),
+        torchvision.transforms.RandomErasing(
+            scale=(0.02, 0.02))
     ]))
-print(dataset)
+print(dataset, "\n")
 
 # Show label names
-print("classes:\n", dataset.classes)
+print("classes:\n", dataset.classes, "\n")
 
 # Split dataset into train and test (5:1)
 train_dataset, test_dataset = torch.utils.data.random_split(
@@ -83,11 +98,6 @@ for epoch in range(5):
             correct += (predicted == y).sum().item()
         print(f'Epoch: {epoch}, Accuracy: {100 * correct / total}%')
 
-# Save as onnx
-dummy_input = torch.randn(1, 20, 28, 1)
-torch.onnx.export(model, dummy_input, "mlp.onnx")
-
-# Check onnx
-onnx_model = onnx.load("mlp.onnx")
-onnx.checker.check_model(onnx_model)
-print(onnx.helper.printable_graph(onnx_model.graph))
+    # Save model on each epoch
+    save_model(model)
+    print("\n")
