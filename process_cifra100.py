@@ -32,6 +32,9 @@ def processSet(set, name):
         img = set[b'data'][i]
         img = processImage(img)
         # showImage(img)
+        import os
+        if not os.path.exists('datasets/9negative/'):
+            os.makedirs('datasets/9negative/')
         path = 'datasets/9negative/' + name + str(i) + '.png'
         cv2.imwrite(path, img)
         print(path)

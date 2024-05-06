@@ -69,6 +69,12 @@ train_loader = torch.utils.data.DataLoader(
 test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=100, shuffle=True)
 
+# 在训练开始前，检查是否存在预训练权重
+pretrained_weights = "mlp.pth"
+if os.path.isfile(pretrained_weights):
+    model.load_state_dict(torch.load(pretrained_weights))
+    print("Loaded weights from {}".format(pretrained_weights))
+    
 # Train and evaluate
 for epoch in range(5):
     for batch, (x, y) in enumerate(train_loader):
@@ -97,6 +103,10 @@ for epoch in range(5):
             total += y.size(0)
             correct += (predicted == y).sum().item()
         print(f'Epoch: {epoch}, Accuracy: {100 * correct / total}%')
+        
+    # Save model state at the end of each epoch
+    torch.save(model.state_dict(), pretrained_weights)
+    print("Saved weights to {}".format(pretrained_weights))
 
     # Save model on each epoch
     save_model(model)
